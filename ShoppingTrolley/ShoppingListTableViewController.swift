@@ -35,9 +35,19 @@ import UIKit
 
 class ShoppingListTableViewController: UITableViewController {
   let fruit = ["🍏 Apples", "🍌 Bananas", "🍓 Strawberries"]
+  let fruitsLogHandle = MXMetricManager.makeLogHandle(category: "Fruits")
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    
+    let metricManager = MXMetricManager.shared
+    metricManager.add(self)
+    
+    mxSignpost(
+      .event,
+      log: fruitsLogHandle,
+      name: "Loading Fruits TableViewController")
+
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -48,5 +58,17 @@ class ShoppingListTableViewController: UITableViewController {
 
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return fruit.count
+  }
+}
+
+extension ShoppingListTableViewController: MXMetricManagerSubscriber {
+  func didReceive(_ payloads: [MXMetricPayload]) {
+    guard let firstPayload = payloads.first else { return }
+    print(firstPayload.dictionaryRepresentation())
+  }
+
+  func didReceive(_ payloads: [MXDiagnosticPayload]) {
+    guard let firstPayload = payloads.first else { return }
+    print(firstPayload.dictionaryRepresentation())
   }
 }
